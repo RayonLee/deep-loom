@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "modules": {
+    "paper-reading": {
+      "name": "论文精读",
+      "subskills": []
+    },
+    "textbook": {
+      "name": "教材章节编写",
+      "subskills": []
+    },
+    "grant-writing": {
+      "name": "中文课题申报",
+      "subskills": []
+    },
+    "case-writing": {
+      "name": "教学案例写作",
+      "subskills": []
+    },
+    "citation-audit": {
+      "name": "引用与文本审查",
+      "subskills": []
+    },
+    "research-ideation": {
+      "name": "学术构思与预验证",
+      "subskills": []
+    },
+    "paper-writing": {
+      "name": "论文检索与综述",
+      "subskills": []
+    }
+  },
+  "edges": [
+    {
+      "from": "paper-reading",
+      "to": "textbook",
+      "relation": "informs",
+      "knowledge": "knowledge/papers",
+      "status": "confirmed"
+    },
+    {
+      "from": "paper-reading",
+      "to": "case-writing",
+      "relation": "informs",
+      "knowledge": "knowledge/papers",
+      "status": "confirmed"
+    },
+    {
+      "from": "paper-reading",
+      "to": "grant-writing",
+      "relation": "informs",
+      "knowledge": "knowledge/papers",
+      "status": "confirmed"
+    },
+    {
+      "from": "paper-reading",
+      "to": "citation-audit",
+      "relation": "informs",
+      "knowledge": "knowledge/papers",
+      "status": "confirmed"
+    },
+    {
+      "from": "textbook",
+      "to": "grant-writing",
+      "relation": "informs",
+      "knowledge": "knowledge/textbook",
+      "status": "confirmed"
+    },
+    {
+      "from": "textbook",
+      "to": "case-writing",
+      "relation": "informs",
+      "knowledge": "knowledge/textbook",
+      "status": "confirmed"
+    },
+    {
+      "from": "case-writing",
+      "to": "textbook",
+      "relation": "informs",
+      "knowledge": "knowledge/cases",
+      "status": "confirmed"
+    },
+    {
+      "from": "case-writing",
+      "to": "grant-writing",
+      "relation": "informs",
+      "knowledge": "knowledge/cases",
+      "status": "confirmed"
+    },
+    {
+      "from": "textbook",
+      "to": "citation-audit",
+      "relation": "audited-by",
+      "knowledge": "knowledge/textbook",
+      "status": "confirmed"
+    },
+    {
+      "from": "case-writing",
+      "to": "citation-audit",
+      "relation": "audited-by",
+      "knowledge": "knowledge/cases",
+      "status": "confirmed"
+    },
+    {
+      "from": "grant-writing",
+      "to": "citation-audit",
+      "relation": "audited-by",
+      "knowledge": "knowledge/grants",
+      "status": "confirmed"
+    }
+  ],
+  "forbidden": [
+    {
+      "id": "audit-must-not-overwrite",
+      "from": "citation-audit",
+      "to": "*",
+      "action": "write-corpus",
+      "reason": "审查意见只进入 knowledge/audits，不得覆盖被审稿。"
+    },
+    {
+      "id": "no-cross-module-write",
+      "from": "*",
+      "to": "*",
+      "action": "write-foreign-corpus",
+      "reason": "任何模块不得直接写入另一个模块的 working 或 corpus 目录。跨模块只通过检索和关联边进行。"
+    },
+    {
+      "id": "abstract-is-not-full-text",
+      "from": "paper-reading",
+      "to": "*",
+      "action": "use-abstract-as-full-text",
+      "reason": "只核验到摘要的论文笔记，不得当成已精读的证据或引用支撑。"
+    }
+  ],
+  "stores": {
+    "papers": {
+      "name": "论文笔记",
+      "path": "knowledge/papers",
+      "writer": "paper-reading"
+    },
+    "textbook": {
+      "name": "教材",
+      "path": "knowledge/textbook",
+      "writer": "textbook"
+    },
+    "grants": {
+      "name": "课题",
+      "path": "knowledge/grants",
+      "writer": "grant-writing"
+    },
+    "cases": {
+      "name": "案例",
+      "path": "knowledge/cases",
+      "writer": "case-writing"
+    },
+    "sources": {
+      "name": "引用存档",
+      "path": "knowledge/sources",
+      "writer": "textbook"
+    },
+    "audits": {
+      "name": "审查意见",
+      "path": "knowledge/audits",
+      "writer": "citation-audit"
+    }
+  }
+}

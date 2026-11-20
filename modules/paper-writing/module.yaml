@@ -1,0 +1,13 @@
+{
+  "id": "paper-writing",
+  "name": "论文检索与综述",
+  "skill": "SKILL.md",
+  "reads": [
+    "knowledge/index/"
+  ],
+  "writes": [
+    "projects/"
+  ],
+  "archives_to": [],
+  "retrieve": "core/retrieve.md"
+}

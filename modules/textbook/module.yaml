@@ -1,0 +1,16 @@
+{
+  "id": "textbook",
+  "name": "教材章节编写",
+  "skill": "SKILL.md",
+  "reads": [
+    "knowledge/index/"
+  ],
+  "writes": [
+    "projects/"
+  ],
+  "archives_to": [
+    "knowledge/textbook/",
+    "knowledge/sources/"
+  ],
+  "retrieve": "core/retrieve.md"
+}

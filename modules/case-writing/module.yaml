@@ -1,0 +1,15 @@
+{
+  "id": "case-writing",
+  "name": "教学案例写作",
+  "skill": "SKILL.md",
+  "reads": [
+    "knowledge/index/"
+  ],
+  "writes": [
+    "projects/"
+  ],
+  "archives_to": [
+    "knowledge/cases/"
+  ],
+  "retrieve": "core/retrieve.md"
+}

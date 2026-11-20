@@ -1,0 +1,15 @@
+{
+  "id": "citation-audit",
+  "name": "引用与文本审查",
+  "skill": "SKILL.md",
+  "reads": [
+    "knowledge/index/"
+  ],
+  "writes": [
+    "projects/"
+  ],
+  "archives_to": [
+    "knowledge/audits/"
+  ],
+  "retrieve": "core/retrieve.md"
+}

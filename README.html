@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deep Loom</title>
+<style>
+:root{color-scheme:light;--ink:#172a32;--muted:#3d565e;--line:#cbdce0;--paper:#f5f9f9;--accent:#075c67}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:1rem/1.68 system-ui,-apple-system,sans-serif}
+main{max-width:70rem;margin:0 auto;padding:0 clamp(1rem,4vw,3rem) 4rem}
+a{color:var(--accent);text-decoration-thickness:.08em;text-underline-offset:.19em}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.hero{margin-top:clamp(1rem,6vw,4rem);padding:clamp(1.3rem,5vw,3.5rem);border:1px solid var(--line);border-radius:1.35rem;background:linear-gradient(125deg,#fff 12%,#e4f4f2 100%)}
+h1,h2,h3{line-height:1.2;margin:0}
+h1{font-size:clamp(2.8rem,8vw,6rem);font-weight:760;letter-spacing:-.065em}
+h2{font-size:clamp(1.45rem,3vw,2.1rem);letter-spacing:-.025em}
+h3{font-size:1.06rem}
+.lead{max-width:43rem;font-size:clamp(1.05rem,2.5vw,1.4rem);color:var(--muted)}
+nav,.links{display:flex;gap:.45rem 1.2rem;flex-wrap:wrap}
+nav{margin-top:1.25rem}
+section{margin-top:clamp(2rem,5vw,3.8rem)}
+.flow,.skills,.steps{display:grid;gap:1rem;margin:1rem 0;padding:0;list-style:none}
+.flow{grid-template-columns:repeat(4,minmax(0,1fr))}
+.skills,.steps{grid-template-columns:repeat(3,minmax(0,1fr))}
+.flow li,.skills li,.steps li{background:#fff;border:1px solid var(--line);border-radius:.8rem;padding:1rem;position:relative}
+.flow li:not(:last-child):after{content:"→";position:absolute;right:-.94rem;top:.5rem;color:var(--accent);font-weight:700}
+.note,.flow p,.skills p,.steps p{color:var(--muted);margin:.55rem 0}
+.layout{margin:1rem 0;display:grid;grid-template-columns:max-content 1fr;gap:.5rem 1.2rem}
+.layout dd{margin:0}
+code{color:#184954;background:#e6f1f1;padding:.13em .42em;border-radius:.25em}
+@media(max-width:48rem){.flow,.skills,.steps{grid-template-columns:repeat(2,minmax(0,1fr))}.flow li:after{display:none}}
+@media(max-width:33rem){.flow,.skills,.steps{grid-template-columns:1fr}}
+</style></head>
+<body><main>
+<header class="hero"><h1>Deep Loom</h1>
+<p class="lead">面向学术工作的本地协作框架，从确认任务和依据，到模块交付和归档。</p>
+<nav><a href="README_EN.html">English</a> <a href="#start">快速开始</a> <a href="#skills">七类通用流程</a> <a href="#layout">目录与运行边界</a></nav></header>
+<section id="workflow"><h2>任务如何流转</h2><ol class="flow">
+<li><h3>明确任务</h3><p>确认目标、材料和交付目录</p></li>
+<li><h3>检索材料</h3><p>用查询卡记录范围和来源</p></li>
+<li><h3>模块执行</h3><p>按选定技能处理材料</p></li>
+<li><h3>确认与归档</h3><p>核对交付，再登记条目和关系</p></li>
+</ol><p class="note">操作者选择主模块并确认交接。工作区的数据由部署者在本地创建，模块图记录流程和读写边界。</p></section>
+<section id="start"><h2>快速开始</h2><ol class="steps">
+<li><h3>建立本地工作区</h3><p>复制空白项目和查询卡模板，填入本轮目标、允许使用的材料和交付位置。</p><div class="links"><a href="core/schema/project.yaml">项目模板</a> <a href="core/schema/query.yaml">查询卡</a> <a href="templates/config.yaml">空白配置</a></div></li>
+<li><h3>选择主模块</h3><p>按任务信号选择技能，开工时核实材料出处，把工作文件放在自己的项目目录。</p><div class="links"><a href="core/router.md">任务分派</a> <a href="core/retrieve.md">检索规程</a></div></li>
+<li><h3>核对与归档</h3><p>确认采用的材料、交付版本和待登记关系。需要用量记录或文本抽取时，在本地运行核心脚本。</p><div class="links"><a href="core/archive.md">归档规程</a> <a href="core/README.md">核心命令与依赖</a></div></li>
+</ol></section>
+<section id="skills"><h2>七类通用学术流程</h2><ul class="skills">
+<li><h3><a href="modules/research-ideation/SKILL.md">学术构思与预验证</a></h3><p>收窄研究问题，检查竞争解释、资料可得性和推断条件。</p></li>
+<li><h3><a href="modules/paper-writing/SKILL.md">论文检索与综述</a></h3><p>记录检索和筛选，核验书目，形成证据矩阵和综述。</p></li>
+<li><h3><a href="modules/paper-reading/SKILL.md">论文精读</a></h3><p>围绕全文的结构、方法、证据和局限做笔记。</p></li>
+<li><h3><a href="modules/textbook/SKILL.md">教材章节编写</a></h3><p>组织教学目标、章节结构、概念解释和引文。</p></li>
+<li><h3><a href="modules/grant-writing/SKILL.md">中文课题申报</a></h3><p>对照指南确定方向，组织论证和阶段计划。</p></li>
+<li><h3><a href="modules/case-writing/SKILL.md">教学案例写作</a></h3><p>编写案例正文和配套教学笔记，保留事实依据。</p></li>
+<li><h3><a href="modules/citation-audit/SKILL.md">引用与文本审查</a></h3><p>逐条核查引文、事实性主张和来源，记录修订建议。</p></li>
+</ul></section>
+<section id="layout"><h2>目录与运行边界</h2><dl class="layout">
+<dt><code>core/</code></dt><dd>核心流程、模块图、字段模板和 Python 工具</dd>
+<dt><code>modules/</code></dt><dd>七项技能及其模块声明</dd>
+<dt><code>templates/</code></dt><dd>部署者自行填写的空白配置</dd>
+</dl>
+<p>四个核心 Python 工具用于文本抽取、项目时间计算、写入用量和查看用量。使用 Python 3.10 或更新版本。DOCX 抽取使用标准库，PDF 和旧 DOC 需要相应的本地转换程序。</p>
+<p class="note">检索、归档和模块交接由操作者执行。论文精读、教材、申报、案例和引文审查提供人工流程说明。原专用生成器、原看板、自动检索、自动归档与项目总表同步均未随框架提供。</p>
+<p>仓库级许可尚未确定。</p>
+<div class="links"><a href="core/README.md">核心架构</a> <a href="core/module-graph.md">模块图</a> <a href="core/schema/README.md">空白字段模板</a></div>
+</section>
+</main></body></html>

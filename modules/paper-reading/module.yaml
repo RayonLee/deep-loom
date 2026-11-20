@@ -1,0 +1,15 @@
+{
+  "id": "paper-reading",
+  "name": "论文精读",
+  "skill": "SKILL.md",
+  "reads": [
+    "knowledge/index/"
+  ],
+  "writes": [
+    "projects/"
+  ],
+  "archives_to": [
+    "knowledge/papers/"
+  ],
+  "retrieve": "core/retrieve.md"
+}

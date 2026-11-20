@@ -1,0 +1,18 @@
+{
+  "task": "",
+  "goal": "",
+  "project": "",
+  "topics": [],
+  "mechanisms": [],
+  "regions": [],
+  "entities": [],
+  "must_include": [],
+  "exclude": [],
+  "pack": [],
+  "used": [],
+  "unused": [],
+  "objects": [],
+  "object_edges": [],
+  "new_objects": [],
+  "new_links": []
+}

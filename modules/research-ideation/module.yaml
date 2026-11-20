@@ -1,0 +1,13 @@
+{
+  "id": "research-ideation",
+  "name": "学术构思与预验证",
+  "skill": "SKILL.md",
+  "reads": [
+    "knowledge/index/"
+  ],
+  "writes": [
+    "projects/"
+  ],
+  "archives_to": [],
+  "retrieve": "core/retrieve.md"
+}

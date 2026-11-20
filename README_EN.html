@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deep Loom</title>
+<style>
+:root{color-scheme:light;--ink:#172a32;--muted:#3d565e;--line:#cbdce0;--paper:#f5f9f9;--accent:#075c67}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:1rem/1.68 system-ui,-apple-system,sans-serif}
+main{max-width:70rem;margin:0 auto;padding:0 clamp(1rem,4vw,3rem) 4rem}
+a{color:var(--accent);text-decoration-thickness:.08em;text-underline-offset:.19em}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.hero{margin-top:clamp(1rem,6vw,4rem);padding:clamp(1.3rem,5vw,3.5rem);border:1px solid var(--line);border-radius:1.35rem;background:linear-gradient(125deg,#fff 12%,#e4f4f2 100%)}
+h1,h2,h3{line-height:1.2;margin:0}
+h1{font-size:clamp(2.8rem,8vw,6rem);font-weight:760;letter-spacing:-.065em}
+h2{font-size:clamp(1.45rem,3vw,2.1rem);letter-spacing:-.025em}
+h3{font-size:1.06rem}
+.lead{max-width:43rem;font-size:clamp(1.05rem,2.5vw,1.4rem);color:var(--muted)}
+nav,.links{display:flex;gap:.45rem 1.2rem;flex-wrap:wrap}
+nav{margin-top:1.25rem}
+section{margin-top:clamp(2rem,5vw,3.8rem)}
+.flow,.skills,.steps{display:grid;gap:1rem;margin:1rem 0;padding:0;list-style:none}
+.flow{grid-template-columns:repeat(4,minmax(0,1fr))}
+.skills,.steps{grid-template-columns:repeat(3,minmax(0,1fr))}
+.flow li,.skills li,.steps li{background:#fff;border:1px solid var(--line);border-radius:.8rem;padding:1rem;position:relative}
+.flow li:not(:last-child):after{content:"→";position:absolute;right:-.94rem;top:.5rem;color:var(--accent);font-weight:700}
+.note,.flow p,.skills p,.steps p{color:var(--muted);margin:.55rem 0}
+.layout{margin:1rem 0;display:grid;grid-template-columns:max-content 1fr;gap:.5rem 1.2rem}
+.layout dd{margin:0}
+code{color:#184954;background:#e6f1f1;padding:.13em .42em;border-radius:.25em}
+@media(max-width:48rem){.flow,.skills,.steps{grid-template-columns:repeat(2,minmax(0,1fr))}.flow li:after{display:none}}
+@media(max-width:33rem){.flow,.skills,.steps{grid-template-columns:1fr}}
+</style></head>
+<body><main>
+<header class="hero"><h1>Deep Loom</h1>
+<p class="lead">A local workspace framework for academic tasks, from scoping and evidence retrieval to delivery and archiving.</p>
+<nav><a href="README.html">中文</a> <a href="#start">Quick start</a> <a href="#skills">Seven workflows</a> <a href="#layout">Layout and runtime</a></nav></header>
+<section id="workflow"><h2>How a task moves through the workspace</h2><ol class="flow">
+<li><h3>Scope the task</h3><p>Confirm the goal, materials, and delivery folder</p></li>
+<li><h3>Retrieve materials</h3><p>Record scope and sources in a query card</p></li>
+<li><h3>Work in a module</h3><p>Follow the selected skill</p></li>
+<li><h3>Review and archive</h3><p>Confirm the deliverable, then record items and relationships</p></li>
+</ol><p class="note">An operator selects the lead module and confirms handoffs. Workspace data is created locally. The module graph describes workflow and read/write boundaries.</p></section>
+<section id="start"><h2>Quick start</h2><ol class="steps">
+<li><h3>Set up a local workspace</h3><p>Copy the blank project and query templates and fill in the task goal, permitted materials, and delivery location.</p><div class="links"><a href="core/schema/project.yaml">Project template</a> <a href="core/schema/query.yaml">Query card</a> <a href="templates/config.yaml">Blank configuration</a></div></li>
+<li><h3>Choose a lead module</h3><p>Use the routing guide to choose a skill. Verify source details and keep working files in the local project folder.</p><div class="links"><a href="core/router.md">Task routing</a> <a href="core/retrieve.md">Retrieval guide</a></div></li>
+<li><h3>Review and archive</h3><p>Confirm which materials were used, the deliverable version, and the relationships to record. Run core scripts locally when you need usage logging or text extraction.</p><div class="links"><a href="core/archive.md">Archiving guide</a> <a href="core/README.md">Core commands and dependencies</a></div></li>
+</ol></section>
+<section id="skills"><h2>Seven academic workflows</h2><ul class="skills">
+<li><h3><a href="modules/research-ideation/SKILL.md">Research ideation</a></h3><p>Narrow a research question and check competing explanations, data access, and inference conditions.</p></li>
+<li><h3><a href="modules/paper-writing/SKILL.md">Literature search and review</a></h3><p>Log searches and screening, verify bibliographic details, and build an evidence matrix and review.</p></li>
+<li><h3><a href="modules/paper-reading/SKILL.md">Close reading</a></h3><p>Take notes on a paper’s structure, methods, evidence, and limitations.</p></li>
+<li><h3><a href="modules/textbook/SKILL.md">Textbook chapters</a></h3><p>Organize learning objectives, chapter structure, explanations, and citations.</p></li>
+<li><h3><a href="modules/grant-writing/SKILL.md">Chinese grant applications</a></h3><p>Use the call guidelines to choose a direction, build the argument, and plan the work.</p></li>
+<li><h3><a href="modules/case-writing/SKILL.md">Teaching cases</a></h3><p>Write the case and teaching note, with traceable support for factual claims.</p></li>
+<li><h3><a href="modules/citation-audit/SKILL.md">Citation and text audit</a></h3><p>Check citations, factual claims, and sources, then document revisions.</p></li>
+</ul></section>
+<section id="layout"><h2>Layout and runtime</h2><dl class="layout">
+<dt><code>core/</code></dt><dd>Workflow guides, module graph, field templates, and Python tools</dd>
+<dt><code>modules/</code></dt><dd>Seven skills and their module declarations</dd>
+<dt><code>templates/</code></dt><dd>Blank configuration for the deployment</dd>
+</dl>
+<p>Four core Python tools extract text, calculate project time, append usage records, and report usage. Use Python 3.10 or later. DOCX extraction uses the standard library. PDF and legacy DOC extraction require a local converter.</p>
+<p class="note">Operators handle retrieval, archiving, and handoffs. Close reading, chapters, grant applications, cases, and citation audit are manual workflow guides. The original generators and dashboard, automated retrieval and archiving, and project workbook sync are outside this distribution.</p>
+<p>A repository-wide license has yet to be determined.</p>
+<div class="links"><a href="core/README.md">Core architecture</a> <a href="core/module-graph.md">Module graph</a> <a href="core/schema/README.md">Blank field templates</a></div>
+</section>
+</main></body></html>

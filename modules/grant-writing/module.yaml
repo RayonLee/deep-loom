@@ -1,0 +1,15 @@
+{
+  "id": "grant-writing",
+  "name": "中文课题申报",
+  "skill": "SKILL.md",
+  "reads": [
+    "knowledge/index/"
+  ],
+  "writes": [
+    "projects/"
+  ],
+  "archives_to": [
+    "knowledge/grants/"
+  ],
+  "retrieve": "core/retrieve.md"
+}
