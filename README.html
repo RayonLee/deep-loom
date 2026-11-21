@@ -30,11 +30,49 @@ section{margin-top:clamp(2rem,5vw,3.8rem)}
 code{color:#184954;background:#e6f1f1;padding:.13em .42em;border-radius:.25em}
 @media(max-width:48rem){.flow,.skills,.steps{grid-template-columns:repeat(2,minmax(0,1fr))}.flow li:after{display:none}}
 @media(max-width:33rem){.flow,.skills,.steps{grid-template-columns:1fr}}
+
+/* Brand header. Page and workflow sections retain their original styles. */
+.hero.brand-header {
+  --brand-paper:#fbfaf6; --brand-ink:#102030; --brand-muted:#5c564c;
+  --brand-rule:#d1c6b4; --brand-gold:#c9a35a;
+  padding:clamp(1.35rem,4.5vw,3rem) clamp(1rem,5vw,3rem) 2rem;
+  text-align:center; color:var(--brand-ink); background:var(--brand-paper);
+  border-color:var(--brand-rule); border-radius:.75rem;
+  font-family:"Songti SC","STSong","Noto Serif CJK SC",Georgia,serif;
+}
+.hero .affiliation {
+  display:flex; align-items:center; justify-content:center; flex-wrap:wrap;
+  gap:.6rem 1.15rem; margin:0 auto .3rem;
+}
+.hero .affiliation .emblem {width:clamp(49px,10vw,70px);height:auto}
+.hero .affiliation .school {width:min(405px,68vw);max-width:96%;height:auto}
+.hero .brand-caption {color:var(--brand-muted);font-size:.78rem;margin:.36rem 0 1.25rem}
+.hero .brand-wordmark {line-height:1.12;margin:0 auto;max-width:min(440px,88%)}
+.hero .brand-wordmark img {height:auto;max-width:100%;width:100%}
+.hero .light {display:inline-block}
+.hero .dark {display:none}
+.hero .lead {max-width:39rem;margin:.25rem auto 0;color:var(--brand-muted);font-size:clamp(1rem,2.7vw,1.22rem)}
+.hero nav {justify-content:center;border-top:1px solid var(--brand-gold);margin:1rem auto 0;padding:.75rem 0 0;max-width:39rem}
+.hero nav a {color:var(--brand-ink);text-underline-offset:.22em}
+.hero nav a:focus-visible {outline:2px solid var(--brand-gold);outline-offset:3px}
+@media(prefers-color-scheme:dark){
+  .hero.brand-header {
+    --brand-paper:#0e1a28; --brand-ink:#f0e8d8; --brand-muted:#c2b9a8;
+    --brand-rule:#3a4450; --brand-gold:#d4b15f;
+  }
+  .hero .light {display:none}
+  .hero .dark {display:inline-block}
+}
+
 </style></head>
 <body><main>
-<header class="hero"><h1>Deep Loom</h1>
+<header class="hero brand-header">
+<div class="affiliation"><img class="emblem light" src="docs/assets/affiliation/ruc-emblem.png" width="192" height="192" alt="中国人民大学校徽"> <img class="emblem dark" src="docs/assets/affiliation/ruc-emblem-dark.png" width="192" height="192" alt="中国人民大学校徽"><img class="school light" src="docs/assets/affiliation/ruc-info-logo.png" width="576" height="91" alt="中国人民大学信息学院标识"> <img class="school dark" src="docs/assets/affiliation/ruc-info-logo-dark.png" width="576" height="91" alt="中国人民大学信息学院标识"></div>
+<p class="brand-caption">校徽与院标沿用原版展示版式。</p>
+<h1 class="brand-wordmark"><img class="logo light" src="docs/assets/logo-light.png" width="720" height="556" alt="Deep Loom 深织"> <img class="logo dark" src="docs/assets/logo-dark.png" width="720" height="556" alt="Deep Loom 深织"></h1>
 <p class="lead">面向学术工作的本地协作框架，从确认任务和依据，到模块交付和归档。</p>
-<nav><a href="README_EN.html">English</a> <a href="#start">快速开始</a> <a href="#skills">七类通用流程</a> <a href="#layout">目录与运行边界</a></nav></header>
+<nav><a href="README_EN.html">English</a> <a href="#start">快速开始</a> <a href="#skills">七类通用流程</a> <a href="#layout">目录与运行边界</a></nav>
+</header>
 <section id="workflow"><h2>任务如何流转</h2><ol class="flow">
 <li><h3>明确任务</h3><p>确认目标、材料和交付目录</p></li>
 <li><h3>检索材料</h3><p>用查询卡记录范围和来源</p></li>
@@ -62,7 +100,8 @@ code{color:#184954;background:#e6f1f1;padding:.13em .42em;border-radius:.25em}
 </dl>
 <p>四个核心 Python 工具用于文本抽取、项目时间计算、写入用量和查看用量。使用 Python 3.10 或更新版本。DOCX 抽取使用标准库，PDF 和旧 DOC 需要相应的本地转换程序。</p>
 <p class="note">检索、归档和模块交接由操作者执行。论文精读、教材、申报、案例和引文审查提供人工流程说明。原专用生成器、原看板、自动检索、自动归档与项目总表同步均未随框架提供。</p>
-<p>仓库级许可尚未确定。</p>
+<p>日常工作在本地主本进行。独立公开副本仅用于发布和展示框架设计，导出区用于发布准备和留存过程记录。 <a href="MAINTENANCE.md">维护说明</a></p>
+<p>RayonLee 有权许可的公开框架代码和通用文档采用 MIT 许可证。第三方校徽、品牌标识及素材不在 MIT 许可范围内，原有权利、许可和署名均予保留。中国人民大学及其信息学院标识仅供展示。 <a href="LICENSE">MIT 许可证</a> · <a href="https://www.ruc.edu.cn/xuexiaobiaozhi1924747550510977025.html">中国人民大学校徽来源</a> · <a href="https://info.ruc.edu.cn/images/sch_logo.png">信息学院标识来源</a></p>
 <div class="links"><a href="core/README.md">核心架构</a> <a href="core/module-graph.md">模块图</a> <a href="core/schema/README.md">空白字段模板</a></div>
 </section>
 </main></body></html>

@@ -30,11 +30,49 @@ section{margin-top:clamp(2rem,5vw,3.8rem)}
 code{color:#184954;background:#e6f1f1;padding:.13em .42em;border-radius:.25em}
 @media(max-width:48rem){.flow,.skills,.steps{grid-template-columns:repeat(2,minmax(0,1fr))}.flow li:after{display:none}}
 @media(max-width:33rem){.flow,.skills,.steps{grid-template-columns:1fr}}
+
+/* Brand header. Page and workflow sections retain their original styles. */
+.hero.brand-header {
+  --brand-paper:#fbfaf6; --brand-ink:#102030; --brand-muted:#5c564c;
+  --brand-rule:#d1c6b4; --brand-gold:#c9a35a;
+  padding:clamp(1.35rem,4.5vw,3rem) clamp(1rem,5vw,3rem) 2rem;
+  text-align:center; color:var(--brand-ink); background:var(--brand-paper);
+  border-color:var(--brand-rule); border-radius:.75rem;
+  font-family:"Songti SC","STSong","Noto Serif CJK SC",Georgia,serif;
+}
+.hero .affiliation {
+  display:flex; align-items:center; justify-content:center; flex-wrap:wrap;
+  gap:.6rem 1.15rem; margin:0 auto .3rem;
+}
+.hero .affiliation .emblem {width:clamp(49px,10vw,70px);height:auto}
+.hero .affiliation .school {width:min(405px,68vw);max-width:96%;height:auto}
+.hero .brand-caption {color:var(--brand-muted);font-size:.78rem;margin:.36rem 0 1.25rem}
+.hero .brand-wordmark {line-height:1.12;margin:0 auto;max-width:min(440px,88%)}
+.hero .brand-wordmark img {height:auto;max-width:100%;width:100%}
+.hero .light {display:inline-block}
+.hero .dark {display:none}
+.hero .lead {max-width:39rem;margin:.25rem auto 0;color:var(--brand-muted);font-size:clamp(1rem,2.7vw,1.22rem)}
+.hero nav {justify-content:center;border-top:1px solid var(--brand-gold);margin:1rem auto 0;padding:.75rem 0 0;max-width:39rem}
+.hero nav a {color:var(--brand-ink);text-underline-offset:.22em}
+.hero nav a:focus-visible {outline:2px solid var(--brand-gold);outline-offset:3px}
+@media(prefers-color-scheme:dark){
+  .hero.brand-header {
+    --brand-paper:#0e1a28; --brand-ink:#f0e8d8; --brand-muted:#c2b9a8;
+    --brand-rule:#3a4450; --brand-gold:#d4b15f;
+  }
+  .hero .light {display:none}
+  .hero .dark {display:inline-block}
+}
+
 </style></head>
 <body><main>
-<header class="hero"><h1>Deep Loom</h1>
+<header class="hero brand-header">
+<div class="affiliation"><img class="emblem light" src="docs/assets/affiliation/ruc-emblem.png" width="192" height="192" alt="Renmin University of China emblem"> <img class="emblem dark" src="docs/assets/affiliation/ruc-emblem-dark.png" width="192" height="192" alt="Renmin University of China emblem"><img class="school light" src="docs/assets/affiliation/ruc-info-logo.png" width="576" height="91" alt="School of Information, Renmin University of China mark"> <img class="school dark" src="docs/assets/affiliation/ruc-info-logo-dark.png" width="576" height="91" alt="School of Information, Renmin University of China mark"></div>
+<p class="brand-caption">The university and school marks are shown as in the source layout.</p>
+<h1 class="brand-wordmark"><img class="logo light" src="docs/assets/logo-light.png" width="720" height="556" alt="Deep Loom"> <img class="logo dark" src="docs/assets/logo-dark.png" width="720" height="556" alt="Deep Loom"></h1>
 <p class="lead">A local workspace framework for academic tasks, from scoping and evidence retrieval to delivery and archiving.</p>
-<nav><a href="README.html">中文</a> <a href="#start">Quick start</a> <a href="#skills">Seven workflows</a> <a href="#layout">Layout and runtime</a></nav></header>
+<nav><a href="README.html">中文</a> <a href="#start">Quick start</a> <a href="#skills">Seven workflows</a> <a href="#layout">Layout and runtime</a></nav>
+</header>
 <section id="workflow"><h2>How a task moves through the workspace</h2><ol class="flow">
 <li><h3>Scope the task</h3><p>Confirm the goal, materials, and delivery folder</p></li>
 <li><h3>Retrieve materials</h3><p>Record scope and sources in a query card</p></li>
@@ -62,7 +100,8 @@ code{color:#184954;background:#e6f1f1;padding:.13em .42em;border-radius:.25em}
 </dl>
 <p>Four core Python tools extract text, calculate project time, append usage records, and report usage. Use Python 3.10 or later. DOCX extraction uses the standard library. PDF and legacy DOC extraction require a local converter.</p>
 <p class="note">Operators handle retrieval, archiving, and handoffs. Close reading, chapters, grant applications, cases, and citation audit are manual workflow guides. The original generators and dashboard, automated retrieval and archiving, and project workbook sync are outside this distribution.</p>
-<p>A repository-wide license has yet to be determined.</p>
+<p>Day-to-day work takes place in the local primary workspace. The separate public copy is for releases and design reference. The export area is for release preparation and records. <a href="MAINTENANCE.md">Maintenance</a></p>
+<p>The MIT License covers the public framework code and general documentation that RayonLee has the right to license. Third-party emblems, brand marks, and assets are excluded from MIT. Their original rights, license terms, and attribution are retained. The Renmin University of China and School of Information marks are shown for visual reference. <a href="LICENSE">MIT License</a> · <a href="https://www.ruc.edu.cn/xuexiaobiaozhi1924747550510977025.html">Renmin University of China emblem source</a> · <a href="https://info.ruc.edu.cn/images/sch_logo.png">School of Information mark source</a></p>
 <div class="links"><a href="core/README.md">Core architecture</a> <a href="core/module-graph.md">Module graph</a> <a href="core/schema/README.md">Blank field templates</a></div>
 </section>
 </main></body></html>

@@ -1,6 +1,9 @@
-# Deep Loom
-
-A local workspace framework for academic tasks, from scoping and evidence retrieval to delivery and archiving.
+<div align="center">
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/affiliation/ruc-emblem-dark.png"><img src="docs/assets/affiliation/ruc-emblem.png" width="68" alt="Renmin University of China emblem"></picture>  <picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/affiliation/ruc-info-logo-dark.png"><img src="docs/assets/affiliation/ruc-info-logo.png" width="405" alt="School of Information, Renmin University of China mark"></picture>
+<p><sub>The university and school marks are shown as in the source layout.</sub></p>
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.png"><img src="docs/assets/logo-light.png" width="435" alt="Deep Loom"></picture></h1>
+<p>A local workspace framework for academic tasks, from scoping and evidence retrieval to delivery and archiving.</p>
+</div>
 
 [中文](README.md) · [HTML version](README_EN.html)
 
@@ -45,6 +48,8 @@ Four core Python tools extract text, calculate project time, append usage record
 
 Operators handle retrieval, archiving, and handoffs. Close reading, chapters, grant applications, cases, and citation audit are manual workflow guides. The original generators and dashboard, automated retrieval and archiving, and project workbook sync are outside this distribution.
 
-A repository-wide license has yet to be determined.
+Day-to-day work takes place in the local primary workspace. The separate public copy is for releases and design reference. The export area is for release preparation and records. [Maintenance](MAINTENANCE.md)
+
+The MIT License covers the public framework code and general documentation that RayonLee has the right to license. Third-party emblems, brand marks, and assets are excluded from MIT. Their original rights, license terms, and attribution are retained. The Renmin University of China and School of Information marks are shown for visual reference. [MIT License](LICENSE) · [Renmin University of China emblem source](https://www.ruc.edu.cn/xuexiaobiaozhi1924747550510977025.html) · [School of Information mark source](https://info.ruc.edu.cn/images/sch_logo.png)
 
 [Core architecture](core/README.md) · [Module graph](core/module-graph.md) · [Blank field templates](core/schema/README.md)

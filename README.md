@@ -1,6 +1,9 @@
-# Deep Loom
-
-面向学术工作的本地协作框架，从确认任务和依据，到模块交付和归档。
+<div align="center">
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/affiliation/ruc-emblem-dark.png"><img src="docs/assets/affiliation/ruc-emblem.png" width="68" alt="中国人民大学校徽"></picture>  <picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/affiliation/ruc-info-logo-dark.png"><img src="docs/assets/affiliation/ruc-info-logo.png" width="405" alt="中国人民大学信息学院标识"></picture>
+<p><sub>校徽与院标沿用原版展示版式。</sub></p>
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.png"><img src="docs/assets/logo-light.png" width="435" alt="Deep Loom 深织"></picture></h1>
+<p>面向学术工作的本地协作框架，从确认任务和依据，到模块交付和归档。</p>
+</div>
 
 [English](README_EN.md) · [HTML 版](README.html)
 
@@ -45,6 +48,8 @@ flowchart LR
 
 检索、归档和模块交接由操作者执行。论文精读、教材、申报、案例和引文审查提供人工流程说明。原专用生成器、原看板、自动检索、自动归档与项目总表同步均未随框架提供。
 
-仓库级许可尚未确定。
+日常工作在本地主本进行。独立公开副本仅用于发布和展示框架设计，导出区用于发布准备和留存过程记录。 [维护说明](MAINTENANCE.md)
+
+RayonLee 有权许可的公开框架代码和通用文档采用 MIT 许可证。第三方校徽、品牌标识及素材不在 MIT 许可范围内，原有权利、许可和署名均予保留。中国人民大学及其信息学院标识仅供展示。 [MIT 许可证](LICENSE) · [中国人民大学校徽来源](https://www.ruc.edu.cn/xuexiaobiaozhi1924747550510977025.html) · [信息学院标识来源](https://info.ruc.edu.cn/images/sch_logo.png)
 
 [核心架构](core/README.md) · [模块图](core/module-graph.md) · [空白字段模板](core/schema/README.md)
