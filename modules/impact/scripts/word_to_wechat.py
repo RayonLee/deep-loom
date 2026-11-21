@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+from collections import Counter
 from contextlib import contextmanager
 from dataclasses import dataclass
 import fcntl
@@ -25,6 +26,7 @@ import md_to_wechat_html as style
 
 try:
     from docx import Document
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
     from docx.oxml.ns import qn
     from docx.text.paragraph import Paragraph
     from docx.text.run import Run
@@ -40,7 +42,7 @@ BODY = "article.wechat.html"
 TITLE_LIMIT = 64
 DIGEST_LIMIT = 120
 MAX_IMAGES = 10
-FORMAT_VERSION = 1
+FORMAT_VERSION = 2
 OLE_HEADER = bytes.fromhex("D0CF11E0A1B11AE1")
 
 
@@ -187,6 +189,7 @@ def paragraph_role(paragraph):
 class Picture:
     relative: str
     alt: str
+    caption_html: str = None
 
 
 @dataclass
@@ -195,6 +198,8 @@ class ParagraphContent:
     fragments: list
     text: str
     number: tuple = None
+    visual: Counter = None
+    centered: bool = False
 
 
 @dataclass
@@ -219,6 +224,11 @@ class Renderer:
         self.table_widths = []
         self.bookmarks = set()
         self.anchors = set()
+        size = document.styles.element.find("./" + "/".join(
+            qn(f"w:{name}") for name in ("docDefaults", "rPrDefault", "rPr", "sz")
+        ))
+        default = xml_value(size, "val")
+        self.default_size = int(default) / 2 if default and default.isdecimal() else 11.0
 
     def warn(self, message):
         if message not in self.warnings:
@@ -294,7 +304,7 @@ class Renderer:
             return "#word-" + anchor
         raise WordError("正文含无目标的超链接。")
 
-    def run(self, node, paragraph):
+    def run(self, node, paragraph, visual):
         run = Run(node, paragraph)
         chunks, text = [], []
         for child in visible_children(node):
@@ -314,15 +324,54 @@ class Renderer:
                 chunks.append(self.picture(child))
             elif tag not in IGNORED_MARKERS | {"rPr", "commentReference"}:
                 raise WordError("正文含不支持的域、对象、公式、旧式绘图或其他内嵌结构。请先转成正文或嵌入图片。")
+        plain = "".join(text)
+        italic = self.emphasis(run, paragraph, "italic")
+        bold = self.emphasis(run, paragraph, "bold")
+        if visual is not None and plain.strip():
+            visual[self.font_features(run, paragraph, bold)] += len(plain.strip())
         # Only apply emphasis to text, so figures remain valid block elements.
         for index, value in enumerate(chunks):
             if isinstance(value, str):
-                if self.emphasis(run, paragraph, "italic"):
+                if italic:
                     value = f"<em>{value}</em>"
-                if self.emphasis(run, paragraph, "bold"):
+                if bold:
                     value = f'<strong style="{style.STRONG}">{value}</strong>'
                 chunks[index] = value
-        return chunks, "".join(text)
+        return chunks, plain
+
+    def font_features(self, run, paragraph, bold):
+        fonts = [run.font]
+        for current in (run.style, paragraph.style):
+            while current is not None:
+                fonts.append(current.font)
+                current = current.base_style
+        size = next((font.size for font in fonts if font.size is not None), None)
+
+        def rgb(font):
+            try:
+                return font.color.rgb if font.color.type is not None else None
+            except AttributeError:
+                return None
+
+        color = next((value for value in (rgb(font) for font in fonts) if value is not None), None)
+        gray = bool(color is not None and len(color) == 3
+                    and max(color) - min(color) <= 24 and 60 <= min(color) and max(color) <= 200)
+        return (float(size.pt) if size is not None else self.default_size, bool(bold), gray)
+
+    @staticmethod
+    def centered(paragraph):
+        def read(fmt):
+            try:
+                return fmt.alignment
+            except ValueError:
+                return None
+
+        alignment = read(paragraph.paragraph_format)
+        current = paragraph.style
+        while alignment is None and current is not None:
+            alignment = read(current.paragraph_format)
+            current = current.base_style
+        return WD_ALIGN_PARAGRAPH is not None and alignment == WD_ALIGN_PARAGRAPH.CENTER
 
     @staticmethod
     def emphasis(run, paragraph, prop):
@@ -337,17 +386,17 @@ class Renderer:
                 current = current.base_style
         return False
 
-    def inline(self, root, paragraph):
+    def inline(self, root, paragraph, visual):
         chunks, text = [], []
         for node in visible_children(root):
             tag = kind(node)
             if tag == "r":
-                parts, plain = self.run(node, paragraph)
+                parts, plain = self.run(node, paragraph, visual)
                 chunks.extend(parts)
                 text.append(plain)
             elif tag == "hyperlink":
                 target = html.escape(self.hyperlink(node), quote=True)
-                parts, plain = self.inline(node, paragraph)
+                parts, plain = self.inline(node, paragraph, visual)
                 if any(isinstance(part, Picture) for part in parts):
                     raise WordError("不支持带超链接的正文图片。请将链接另放为文字链接。")
                 chunks.append(f'<a href="{target}" style="{style.A}">{"".join(parts)}</a>')
@@ -361,7 +410,7 @@ class Renderer:
                 content = node.find(qn("w:sdtContent"))
                 if content is None:
                     raise WordError("无法读取正文中的内容控件。")
-                parts, plain = self.inline(content, paragraph)
+                parts, plain = self.inline(content, paragraph, visual)
                 chunks.extend(parts)
                 text.append(plain)
             elif tag not in IGNORED_MARKERS | {"pPr", "smartTagPr", "customXmlPr"}:
@@ -418,20 +467,22 @@ class Renderer:
             self.warn("列表编号的标点或组合编号已规范为 HTML 列表格式，请检查编号。")
         return number_id, depth, types[fmt], start, restart_at
 
-    def paragraph(self, node):
+    def paragraph(self, node, in_table=False):
         paragraph = Paragraph(node, self.document)
-        fragments, text = self.inline(node, paragraph)
         role, number = paragraph_role(paragraph), self.numbering(paragraph)
+        visual = Counter() if role == "text" and not number and not in_table else None
+        fragments, text = self.inline(node, paragraph, visual)
         if number and (role == "title" or role.startswith("h")):
             self.warn("保留 Word 标题层级，标题的自动编号未写入，请复核。")
             number = None
-        return ParagraphContent(role, fragments, text.strip(), number)
+        return ParagraphContent(role, fragments, text.strip(), number, visual,
+                                self.centered(paragraph))
 
     def blocks(self, root, in_table=False):
         for node in visible_children(root):
             tag = kind(node)
             if tag == "p":
-                yield self.paragraph(node)
+                yield self.paragraph(node, in_table)
             elif tag == "tbl":
                 if in_table:
                     raise WordError("不支持嵌套表格。请整理成普通表格。")
@@ -504,6 +555,67 @@ class Renderer:
                 output.append(render_paragraph(block, image))
         flush()
         return "\n".join(filter(None, output))
+
+
+CAPTION_LEAD = re.compile(r"^(?:图|表|fig(?:ure)?\.?)\s*[0-9０-９一二三四五六七八九十]", re.I)
+
+
+def infer_visual_roles(blocks):
+    """为命名样式之外的 Normal 段落按字号/字重/对齐/颜色推断 h2、h3 或图注。"""
+    candidates = [block for block in blocks if isinstance(block, ParagraphContent)
+                  and block.visual and block.text
+                  and not any(isinstance(part, Picture) for part in block.fragments)]
+    regular, overall = Counter(), Counter()
+    for block in candidates:
+        for (size, bold, _), chars in block.visual.items():
+            overall[size] += chars
+            if not bold:
+                regular[size] += chars
+    baseline = (regular or overall).most_common(1)[0][0] if (regular or overall) else 11.0
+    roles = Counter()
+    for block in candidates:
+        total = sum(block.visual.values())
+        if not total:
+            continue
+        caption = sum(chars for (size, _, gray), chars in block.visual.items()
+                      if size <= min(10.0, baseline - 0.5)
+                      and (gray or CAPTION_LEAD.match(block.text)))
+        if block.centered and caption >= total * 0.6:
+            block.role = "caption"
+            roles["caption"] += 1
+            continue
+        if len(block.text) > 90 or "\n" in block.text:
+            continue
+        for role, offset in (("h2", 3.5), ("h3", 1.2)):
+            heading = sum(chars for (size, bold, _), chars in block.visual.items()
+                          if bold and size >= baseline + offset)
+            if heading >= total * 0.6:
+                block.role = role
+                roles[role] += 1
+                break
+    return dict(roles)
+
+
+def attach_figure_captions(blocks):
+    """图下紧跟的图注段并入该图的 figcaption；其余图注保持独立段落。"""
+    output = []
+    picture = None
+    for block in blocks:
+        if isinstance(block, ParagraphContent):
+            if (block.role == "caption" and picture is not None and block.text
+                    and all(isinstance(part, str) for part in block.fragments)):
+                picture.caption_html = "".join(block.fragments)
+                picture = None
+                continue
+            if block.fragments:
+                meaningful = [part for part in block.fragments
+                              if not (isinstance(part, str) and not part.strip())]
+                picture = (meaningful[0] if not block.number and len(meaningful) == 1
+                           and isinstance(meaningful[0], Picture) else None)
+        else:
+            picture = None
+        output.append(block)
+    return output
 
 
 def render_paragraph(block, image, in_list=False):
@@ -655,6 +767,9 @@ def write_conversion(data, suffix, output, title=None, digest=None, cover_provid
         if any(rel.reltype.endswith(("/comments", "/commentsExtended")) for rel in document.part.rels.values()):
             renderer.warn("Word 批注已排除。")
         blocks = list(renderer.blocks(document.element.body))
+        visual_roles = infer_visual_roles(blocks)
+        if visual_roles:
+            renderer.warn("按字号、字重、居中或颜色识别了视觉标题或图注，请核对预览。")
         title, title_source, digest, digest_source = metadata(blocks, document.core_properties, title, digest, renderer)
         if not any(isinstance(block, list) or block.text for block in blocks) and not renderer.image_count:
             raise WordError("Word 正文为空或仅有标题，未得到可转换正文。")
@@ -663,6 +778,8 @@ def write_conversion(data, suffix, output, title=None, digest=None, cover_provid
         if renderer.image_count > MAX_IMAGES:
             renderer.warn(f"正文有 {renderer.image_count} 张图，超过 {MAX_IMAGES} 张的排版限制。")
 
+        blocks = attach_figure_captions(blocks)
+
         def render(embedded):
             def image(figure):
                 src = figure.relative
@@ -670,7 +787,7 @@ def write_conversion(data, suffix, output, title=None, digest=None, cover_provid
                     ext = src.rsplit(".", 1)[1]
                     mime = "jpeg" if ext == "jpg" else ext
                     src = f"data:image/{mime};base64," + base64.b64encode(renderer.images[src]).decode("ascii")
-                return style.img_figure(figure.alt, src, None, False)
+                return style.img_figure(figure.alt, src, None, False, caption_html=figure.caption_html)
             return renderer.render_blocks(blocks, image)
 
         preview_title = f'<h1 style="{style.H1P}">{html.escape(title)}</h1>\n' if title else ""
@@ -708,7 +825,7 @@ def write_conversion(data, suffix, output, title=None, digest=None, cover_provid
         "digest": digest, "digest_source": digest_source or "missing",
         "preview": PREVIEW, "body_html": BODY,
         "image_count": renderer.image_count, "images": list(renderer.images),
-        "table_widths": renderer.table_widths, "warnings": renderer.warnings,
+        "table_widths": renderer.table_widths, "visual_roles": visual_roles, "warnings": renderer.warnings,
         "local_status": "incomplete" if incomplete else "ready-for-review",
         "incomplete_reasons": incomplete,
         "artifacts": {name: digest_bytes(blob) for name, blob in artifacts.items()},

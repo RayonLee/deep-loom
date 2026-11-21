@@ -1,10 +1,28 @@
-"""微信公众号内联 HTML 样式及渲染函数。Word 转换器复用这些样式。"""
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""把 Markdown 转成适合微信公众号粘贴的内联 HTML（无外部 CSS/JS）。
+
+用法:
+  python3 scripts/md_to_wechat_html.py <article.md> -o <article.wechat.html>
+  python3 scripts/md_to_wechat_html.py <article.md> -o <article.preview.html> --preview
+  python3 scripts/md_to_wechat_html.py <article.md> -o <article.wechat.html> --body-only --embed-images
+
+只处理常用子集：标题、段落、加粗/斜体、链接、图片、列表、引用、代码块、分割线、简单表格。
+不引入第三方 Markdown 库，避免运行环境差异。复杂语法请在导出后目视预览。
+
+排版口径（2026-11-18 锁定，主题文与人物文共用，详见 references/wechat-constraints.md）：
+层次靠字号、字重、行距、字距和留白共同成立，不靠把正文改成粗体，也不只改一个字号数字。
+正文 17px / 字重 400 / 行高 1.9；节标题 21px / 字重 600，并加左侧色条。
+若后台把正文字号规范到 16px，行距、字重、节距和分节线仍须保持。
+"""
 from __future__ import annotations
 
+import argparse
 import base64
 import html
 import mimetypes
 import re
+import sys
 from pathlib import Path
 
 # Font names must use single quotes: these values go into style="...", and
@@ -75,17 +93,19 @@ def _embed_src(src: str, md_dir: Path | None, embed: bool) -> str:
     return f"data:{mime};base64,{data}"
 
 
-def img_figure(alt: str, src: str, md_dir: Path | None, embed: bool) -> str:
+def img_figure(
+    alt: str, src: str, md_dir: Path | None, embed: bool, *, caption_html: str | None = None
+) -> str:
     used = _embed_src(src, md_dir, embed)
     img = (
         f'<img src="{html.escape(used, quote=True)}" '
         f'alt="{html.escape(alt, quote=True)}" style="{IMG}">'
     )
-    cap = alt.strip()
+    cap = html.escape(alt.strip()) if caption_html is None else caption_html
     if cap:
         return (
             f'<figure style="{FIG}">{img}'
-            f'<figcaption style="{CAP}">{html.escape(cap)}</figcaption></figure>'
+            f'<figcaption style="{CAP}">{cap}</figcaption></figure>'
         )
     return f'<figure style="{FIG}">{img}</figure>'
 
@@ -295,3 +315,33 @@ def extract_body(full_html: str) -> str:
     """取出 body 内部，便于脚本只注入正文。"""
     m = re.search(r"<body[^>]*>(.*)</body>", full_html, re.S | re.I)
     return m.group(1).strip() if m else full_html
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description="Markdown → 公众号内联 HTML")
+    ap.add_argument("markdown", help="输入的 .md 路径")
+    ap.add_argument("-o", "--output", required=True, help="输出 .html 路径")
+    ap.add_argument("--body-only", action="store_true", help="只写 body 内部，不含完整页面")
+    ap.add_argument("--embed-images", action="store_true", help="把本地插图转为 data URI，供写入草稿箱")
+    ap.add_argument("--preview", action="store_true", help="本地预览：保留题头，插图用相对路径")
+    args = ap.parse_args()
+    src = Path(args.markdown)
+    if not src.is_file():
+        print(f"INPUT_FAIL 找不到 Markdown: {src}", file=sys.stderr)
+        return 1
+    html_doc = convert(
+        src.read_text(encoding="utf-8"),
+        md_dir=src.parent,
+        embed=bool(args.embed_images),
+        preview=bool(args.preview) or not args.body_only,
+    )
+    text = extract_body(html_doc) if args.body_only else html_doc
+    out = Path(args.output)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(text, encoding="utf-8")
+    print(f"HTML_OK {out} ({len(text)} chars)")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

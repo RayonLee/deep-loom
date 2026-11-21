@@ -74,7 +74,13 @@ def run_platform(args, title, state, record, manifest=None):
             record("blocked", reason="platform")
         raise WordError(str(exc)) from None
     completeness = "封面与正文图片已回读" if state["delivery_ready"] else "配图不完整或未能确认，不可交稿"
-    print(f"WORD_DRAFT_VERIFIED appmsgid={state['appmsgid']}，标题「{title}」，官方草稿箱列表已回读。{completeness}。")
+    notes = []
+    if state.get("list_binding") == "title-only":
+        notes.append("草稿箱列表标题可见但编号未绑定")
+    if state.get("flattened"):
+        notes.append("正文疑似仍被官方自动排版压平，请人工复核")
+    tail = "。" + "；".join(notes) if notes else ""
+    print(f"WORD_DRAFT_VERIFIED appmsgid={state['appmsgid']}，标题「{title}」，官方草稿箱列表已回读。{completeness}{tail}。")
     return 0
 
 

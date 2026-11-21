@@ -3,6 +3,7 @@ from contextlib import redirect_stdout
 from io import BytesIO, StringIO
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -12,9 +13,11 @@ from unittest.mock import patch
 from zipfile import ZipFile
 
 from docx import Document
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.opc.constants import RELATIONSHIP_TYPE
+from docx.shared import Pt, RGBColor
 from PIL import Image
 
 SCRIPTS = Path(__file__).resolve().parents[1]
@@ -320,6 +323,219 @@ class WordImportTest(unittest.TestCase):
         self.assertFalse(platform.list_contains([{"title": TITLE, "ids": []}] * 2, TITLE, "1"))
         self.assertFalse(platform.list_contains([{"title": TITLE, "ids": []}], TITLE, "1"))
         self.assertTrue(platform.list_contains([{"title": TITLE, "ids": ["2"]}, {"title": TITLE, "ids": ["1"]}], TITLE, "1"))
+
+    def visual_run(self, paragraph, text, size, bold=False, gray=False):
+        run = paragraph.add_run(text)
+        run.font.size = Pt(size)
+        run.bold = bold
+        if gray:
+            run.font.color.rgb = RGBColor(0x7A, 0x7A, 0x7A)
+        return run
+
+    def test_visual_roles_map_to_locked_styles(self):
+        document = Document()
+        document.add_heading(TITLE, level=1)
+        self.visual_run(document.add_paragraph(), "SYNTHETIC 题头导语行", 20, bold=True)
+        self.visual_run(document.add_paragraph(), PROSE, 11)
+        self.visual_run(document.add_paragraph(), "SYNTHETIC 节标题", 15, bold=True)
+        self.visual_run(document.add_paragraph(), "SYNTHETIC 正文第二段，保持常规字重与字号。", 11)
+        self.visual_run(document.add_paragraph(), "SYNTHETIC 小节标题", 12.5, bold=True)
+        self.image(document)
+        caption = document.add_paragraph()
+        caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        self.visual_run(caption, "图 1｜SYNTHETIC 示意图", 9, gray=True)
+        document.save(self.source)
+
+        self.execute(self.args("--convert-only"))
+        manifest = self.manifest()
+        body = self.body()
+        self.assertEqual(manifest["title"], TITLE)
+        self.assertEqual(manifest["digest"], PROSE)
+        self.assertEqual(body.count(f'<h2 style="{markdown.H2}">'), 2)
+        self.assertEqual(body.count(f'<h3 style="{markdown.H3}">'), 1)
+        self.assertIn(f'<figcaption style="{markdown.CAP}">图 1｜SYNTHETIC 示意图</figcaption>', body)
+        self.assertIn(f'<p style="{markdown.P}">{PROSE}</p>', body)
+        self.assertEqual(manifest["visual_roles"], {"h2": 2, "h3": 1, "caption": 1})
+        self.assertTrue(any("视觉标题或图注" in item for item in manifest["warnings"]))
+
+    def test_caption_attaches_to_figure_and_stays_standalone_without_picture(self):
+        document = Document()
+        document.add_heading(TITLE, level=1)
+        document.add_paragraph(PROSE)
+        self.image(document)
+        document.add_paragraph("SYNTHETIC 命名样式图注", style="Caption")
+        self.image(document)
+        visual = document.add_paragraph()
+        visual.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        self.visual_run(visual, "图 2｜SYNTHETIC 视觉图注", 9, gray=True)
+        document.add_paragraph("SYNTHETIC 过渡正文。")
+        standalone = document.add_paragraph()
+        standalone.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        self.visual_run(standalone, "SYNTHETIC 独立小字注", 9, gray=True)
+        document.save(self.source)
+
+        self.execute()
+        body = self.body()
+        captions = re.findall(r"<figcaption[^>]*>(.*?)</figcaption>", body)
+        self.assertTrue(any("SYNTHETIC 命名样式图注" in caption for caption in captions))
+        self.assertIn(f'<figcaption style="{markdown.CAP}">图 2｜SYNTHETIC 视觉图注</figcaption>', body)
+        self.assertIn(f'<p style="{markdown.CAP}">SYNTHETIC 独立小字注</p>', body)
+        self.assertNotIn(f'<p style="{markdown.CAP}">SYNTHETIC 命名样式图注', body)
+
+    def test_list_route_accepts_current_list_card(self):
+        base = platform.ORIGIN + "/cgi-bin/appmsg"
+        route = {"path": "/cgi-bin/appmsg", "action": "list_card", "view": None}
+        self.assertTrue(platform.list_route(base + "?action=list_card&token=123&lang=zh_CN", None))
+        self.assertTrue(platform.list_route(base + "?action=list_card&token=999&lang=zh_CN", route))
+        self.assertFalse(platform.list_route(base + "?action=list_card",
+                                             {"path": "/cgi-bin/appmsg", "action": "list_draft", "view": None}))
+        self.assertFalse(platform.list_route(platform.ORIGIN + "/cgi-bin/home?token=1", None))
+        self.assertFalse(platform.list_route(base + "?action=list_card&appmsgid=424242", None))
+        self.assertFalse(platform.list_route(
+            base + "?t=media/appmsg_edit_v2&action=edit&isNew=1&type=77&createType=0", None))
+        self.assertTrue(platform.list_route(base + "?action=list_draft", None))
+        self.assertTrue(platform.list_route(platform.ORIGIN + "/cgi-bin/draft?token=1", None))
+
+    def test_list_selectors_cover_current_card_dom(self):
+        self.assertIn(".weui-desktop-publish__cover__title", platform.LIST_ROWS)
+        self.assertIn(".weui-desktop-publish__cover-item", platform.LIST_ROWS)
+        self.assertIn("内容管理", platform.MARK_LIST)
+        self.assertIn("草稿箱", platform.MARK_LIST)
+
+    def test_classify_list_binds_only_exposed_ids(self):
+        self.assertEqual(platform.classify_list([{"title": TITLE, "ids": ["424242"]}], TITLE, "424242"), "bound")
+        self.assertEqual(platform.classify_list([{"title": TITLE, "ids": []}], TITLE, "424242"), "title-only")
+        self.assertEqual(platform.classify_list([{"title": TITLE, "ids": []}] * 2, TITLE, "424242"), "ambiguous")
+        self.assertEqual(platform.classify_list([{"title": TITLE, "ids": ["111111"]}], TITLE, "424242"), "ambiguous")
+        self.assertEqual(platform.classify_list([{"title": TITLE + " 另一篇", "ids": []}], TITLE, "424242"), "missing")
+        self.assertEqual(platform.classify_list([], TITLE, "424242"), "missing")
+        self.assertTrue(platform.list_contains([{"title": TITLE, "ids": ["424242"]}], TITLE, "424242"))
+        self.assertFalse(platform.list_contains([{"title": TITLE, "ids": []}], TITLE, "424242"))
+
+    def test_flatten_detection_reads_editor_report(self):
+        self.assertIsNone(platform.is_flattened(None))
+        self.assertIsNone(platform.is_flattened({"available": False}))
+        self.assertIsNone(platform.is_flattened("not-a-report"))
+        self.assertTrue(platform.is_flattened(
+            {"available": True, "auto": True, "blocks": 3, "styled": 2, "textLen": 80}))
+        self.assertTrue(platform.is_flattened(
+            {"available": True, "auto": False, "blocks": 0, "styled": 0, "textLen": 80}))
+        self.assertFalse(platform.is_flattened(
+            {"available": True, "auto": False, "blocks": 12, "styled": 9, "textLen": 80}))
+        self.assertFalse(platform.is_flattened(
+            {"available": True, "auto": False, "blocks": 0, "styled": 0, "textLen": 0}))
+
+    def editor_page_url(self, appmsgid="424242"):
+        return (platform.ORIGIN + "/cgi-bin/appmsg?t=media/appmsg_edit_v2&action=edit"
+                f"&type=77&appmsgid={appmsgid}&token=1")
+
+    def test_flatten_recovery_rewrites_owned_page_once(self):
+        state = {"stage": "saved", "appmsgid": "424242"}
+
+        def record(stage, **updates):
+            state.update({"stage": stage, **updates})
+
+        with patch.object(platform, "flatten_check", side_effect=[True, False]), \
+             patch.object(platform.draft, "current_url", return_value=self.editor_page_url()), \
+             patch.object(platform, "require_owned") as owned, \
+             patch.object(platform.draft, "set_content", return_value={"ok": True}) as write, \
+             patch.object(platform.draft, "click_save_draft", return_value={"ok": True}) as save, \
+             patch.object(platform.time, "sleep"):
+            platform.recover_flattened(TITLE, PROSE, "<p>SYNTHETIC</p>", "424242", "SYNTHETIC", record)
+        owned.assert_called()
+        write.assert_called_once()
+        save.assert_called_once()
+        self.assertTrue(state["flatten_detected"])
+        self.assertTrue(state["flatten_recovered"])
+
+    def test_flatten_recovery_refuses_foreign_page(self):
+        records = []
+
+        def record(stage, **updates):
+            records.append((stage, updates))
+
+        with patch.object(platform, "flatten_check", return_value=True), \
+             patch.object(platform.draft, "current_url", return_value=self.editor_page_url("999999")), \
+             patch.object(platform.draft, "set_content") as write, \
+             patch.object(platform.draft, "click_save_draft") as save:
+            with self.assertRaisesRegex(platform.PlatformBlocked, "归属"):
+                platform.recover_flattened(TITLE, PROSE, "<p>SYNTHETIC</p>", "424242", "SYNTHETIC", record)
+        write.assert_not_called()
+        save.assert_not_called()
+        self.assertIn(("saved", {"flatten_detected": True}), records)
+
+    def test_flatten_recovery_reports_persistent_flattening(self):
+        state = {}
+
+        def record(stage, **updates):
+            state.update({"stage": stage, **updates})
+
+        with patch.object(platform, "flatten_check", side_effect=[True, True]), \
+             patch.object(platform.draft, "current_url", return_value=self.editor_page_url()), \
+             patch.object(platform, "require_owned"), \
+             patch.object(platform.draft, "set_content", return_value={"ok": True}), \
+             patch.object(platform.draft, "click_save_draft", return_value={"ok": True}) as save, \
+             patch.object(platform.time, "sleep"):
+            with self.assertRaisesRegex(platform.PlatformBlocked, "仍被"):
+                platform.recover_flattened(TITLE, PROSE, "<p>SYNTHETIC</p>", "424242", "SYNTHETIC", record)
+        save.assert_called_once()
+        self.assertFalse(state["flatten_recovered"])
+
+    def test_flatten_recovery_skips_unflattened_page(self):
+        def record(stage, **updates):
+            self.fail("未压平不应记录恢复状态")
+
+        with patch.object(platform, "flatten_check", return_value=False), \
+             patch.object(platform.draft, "set_content") as write, \
+             patch.object(platform.draft, "click_save_draft") as save:
+            platform.recover_flattened(TITLE, PROSE, "<p>SYNTHETIC</p>", "424242", "SYNTHETIC", record)
+        write.assert_not_called()
+        save.assert_not_called()
+
+    def test_saved_readback_never_recovers_or_saves(self):
+        state = {"stage": "saved", "appmsgid": "424242", "editor_title_confirmed": True,
+                 "body_images_verified": True, "cover_verified": True, "expected_images": 0}
+
+        def record(stage, **updates):
+            state.update({"stage": stage, **updates})
+
+        with patch.object(platform.draft, "ensure_extension", return_value=True), \
+             patch.object(platform, "verify_list", return_value="title-only"), \
+             patch.object(platform, "recover_flattened") as recover, \
+             patch.object(platform.draft, "set_content") as write, \
+             patch.object(platform.draft, "click_save_draft") as save:
+            platform._run(TITLE, PROSE, "", "", None, 0, state, record)
+        recover.assert_not_called()
+        write.assert_not_called()
+        save.assert_not_called()
+        self.assertEqual(state["stage"], "verified")
+        self.assertEqual(state["list_binding"], "title-only")
+        self.assertTrue(state["delivery_ready"])
+
+    def test_confirm_editor_marks_flattened_readonly(self):
+        state = {"expected_images": 0}
+        records = {}
+
+        def record(stage, **updates):
+            records.update({"stage": stage, **updates})
+
+        with patch.object(platform.draft, "current_url", return_value=self.editor_page_url()), \
+             patch.object(platform, "fields", return_value={"ready": True, "title": TITLE, "visibleTitle": TITLE}), \
+             patch.object(platform.draft, "ev", return_value={"available": True, "auto": True,
+                                                              "blocks": 0, "styled": 0, "textLen": 50, "images": 1}):
+            platform.confirm_editor(TITLE, "424242", state, record)
+        self.assertIs(records["flattened"], True)
+        self.assertFalse(records["body_images_verified"])
+
+    def test_same_title_scan_reports_without_blocking(self):
+        rows = [{"title": TITLE, "ids": []}, {"title": TITLE + " 另一篇", "ids": ["111111"]},
+                {"title": TITLE, "ids": ["222222"]}]
+        with patch.object(platform, "read_list_rows", return_value=rows):
+            duplicates = platform.scan_same_title(TITLE)
+        self.assertEqual([row.get("ids") for row in duplicates], [[], ["222222"]])
+        with patch.object(platform, "read_list_rows", side_effect=platform.PlatformBlocked("SYNTHETIC")):
+            with self.assertRaises(platform.PlatformBlocked):
+                platform.scan_same_title(TITLE)
 
     def test_legacy_clear_error_when_soffice_missing(self):
         self.source = self.source.with_suffix(".doc")
