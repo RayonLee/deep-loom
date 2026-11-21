@@ -1,0 +1,8 @@
+{
+  "id": "impact",
+  "name": "Word 导入微信公众号草稿",
+  "skill": "skills/wechat-word-draft/SKILL.md",
+  "reads": ["用户指定的 Word 文件及可选封面"],
+  "writes": ["用户指定的本地输出目录", "经授权的微信公众号草稿箱"],
+  "archives_to": []
+}

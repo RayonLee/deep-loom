@@ -38,10 +38,14 @@ flowchart LR
 - **教学案例写作** · 编写案例正文和配套教学笔记，保留事实依据。 [SKILL.md](modules/case-writing/SKILL.md)
 - **引用与文本审查** · 逐条核查引文、事实性主张和来源，记录修订建议。 [SKILL.md](modules/citation-audit/SKILL.md)
 
+## 附加通用能力
+
+将已有 Word 文档导入微信公众号，只保存草稿，不群发。旧版 `.doc` 仅在 LibreOffice 能将其转换为 `.docx` 时有限支持。 [Word 导入草稿技能](modules/impact/skills/wechat-word-draft/SKILL.md)
+
 ## 目录与运行边界
 
 - `core/` · 核心流程、模块图、字段模板和 Python 工具
-- `modules/` · 七项技能及其模块声明
+- `modules/` · 七类学术流程、附加通用能力及其模块声明
 - `templates/` · 部署者自行填写的空白配置
 
 四个核心 Python 工具用于文本抽取、项目时间计算、写入用量和查看用量。使用 Python 3.10 或更新版本。DOCX 抽取使用标准库，PDF 和旧 DOC 需要相应的本地转换程序。

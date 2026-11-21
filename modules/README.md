@@ -13,3 +13,7 @@
 | 论文检索与综述 | [paper-writing](paper-writing/SKILL.md) |
 
 跨模块交接见[路由与边界](../core/router.md)。
+
+## 附加通用能力
+
+将已有 Word 文档导入微信公众号，只保存草稿，不群发。旧版 `.doc` 仅在 LibreOffice 能将其转换为 `.docx` 时有限支持。 [Word 导入草稿技能](impact/skills/wechat-word-draft/SKILL.md)

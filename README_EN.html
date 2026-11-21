@@ -93,9 +93,11 @@ code{color:#184954;background:#e6f1f1;padding:.13em .42em;border-radius:.25em}
 <li><h3><a href="modules/case-writing/SKILL.md">Teaching cases</a></h3><p>Write the case and teaching note, with traceable support for factual claims.</p></li>
 <li><h3><a href="modules/citation-audit/SKILL.md">Citation and text audit</a></h3><p>Check citations, factual claims, and sources, then document revisions.</p></li>
 </ul></section>
+<section id="additional"><h2>Additional capability</h2>
+<p>Import an existing Word document into WeChat Official Accounts and save it as a draft only, with no mass messaging. Legacy <code>.doc</code> support is limited to files LibreOffice can convert to <code>.docx</code>. <a href="modules/impact/skills/wechat-word-draft/SKILL.md">Word draft import skill</a></p></section>
 <section id="layout"><h2>Layout and runtime</h2><dl class="layout">
 <dt><code>core/</code></dt><dd>Workflow guides, module graph, field templates, and Python tools</dd>
-<dt><code>modules/</code></dt><dd>Seven skills and their module declarations</dd>
+<dt><code>modules/</code></dt><dd>Seven academic workflows, the additional capability, and their module declarations</dd>
 <dt><code>templates/</code></dt><dd>Blank configuration for the deployment</dd>
 </dl>
 <p>Four core Python tools extract text, calculate project time, append usage records, and report usage. Use Python 3.10 or later. DOCX extraction uses the standard library. PDF and legacy DOC extraction require a local converter.</p>

@@ -38,10 +38,14 @@ An operator selects the lead module and confirms handoffs. Workspace data is cre
 - **Teaching cases** · Write the case and teaching note, with traceable support for factual claims. [SKILL.md](modules/case-writing/SKILL.md)
 - **Citation and text audit** · Check citations, factual claims, and sources, then document revisions. [SKILL.md](modules/citation-audit/SKILL.md)
 
+## Additional capability
+
+Import an existing Word document into WeChat Official Accounts and save it as a draft only, with no mass messaging. Legacy `.doc` support is limited to files LibreOffice can convert to `.docx`. [Word draft import skill](modules/impact/skills/wechat-word-draft/SKILL.md)
+
 ## Layout and runtime
 
 - `core/` · Workflow guides, module graph, field templates, and Python tools
-- `modules/` · Seven skills and their module declarations
+- `modules/` · Seven academic workflows, the additional capability, and their module declarations
 - `templates/` · Blank configuration for the deployment
 
 Four core Python tools extract text, calculate project time, append usage records, and report usage. Use Python 3.10 or later. DOCX extraction uses the standard library. PDF and legacy DOC extraction require a local converter.
